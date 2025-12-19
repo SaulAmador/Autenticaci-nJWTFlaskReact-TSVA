@@ -2,10 +2,16 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+import sys
+from pathlib import Path
+src_path = Path(__file__).parent
+sys.path.insert(0, str(src_path))
+
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
+from flask_jwt_extended import JWTManager
 from api.models import db
 from api.routes import api
 from api.admin import setup_admin
@@ -30,6 +36,10 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
+# JWT Configuration 
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET', 'super-secret')
+jwt = JWTManager(app)
 
 # add the admin
 setup_admin(app)
